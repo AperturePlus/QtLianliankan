@@ -6,7 +6,7 @@
 
 QT       += core gui multimedia
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
 
 TARGET = QtLianliankan
 TEMPLATE = app
@@ -21,5 +21,4 @@ HEADERS  += main_game_window.h \
 
 FORMS    += main_game_window.ui
 
-RESOURCES += \
-    res.qrc
+RESOURCES += res.qrc

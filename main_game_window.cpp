@@ -1,8 +1,9 @@
 #include <QDebug>
-#include <QSound>
+
 #include <QAction>
 #include <QMessageBox>
 #include <QPainter>
+#include <QRegularExpression>
 #include <QLine>
 #include "main_game_window.h"
 #include "ui_main_game_window.h"
@@ -58,6 +59,7 @@ void MainGameWindow::initGame(GameLevel level)
     game = new GameModel;
     game->startGame(level);
 
+
     // 添加button
     for(int i = 0; i < MAX_ROW * MAX_COL; i++)
     {
@@ -74,7 +76,7 @@ void MainGameWindow::initGame(GameLevel level)
             // 有方块就设置图片
             QPixmap iconPix;
             QString fileString;
-            fileString.sprintf(":/res/image/%d.png", game->getGameMap()[i]);
+            fileString = QString::asprintf(":/res/image/%d.png", game->getGameMap()[i]);//取代了qt5的sprintf方法
             iconPix.load(fileString);
             QIcon icon(iconPix);
             imageButton[i]->setIcon(icon);
@@ -103,13 +105,13 @@ void MainGameWindow::initGame(GameLevel level)
     // 播放背景音乐(QMediaPlayer只能播放绝对路径文件),确保res文件在程序执行文件目录里而不是开发目录
     audioPlayer = new QMediaPlayer(this);
     QString curDir = QCoreApplication::applicationDirPath(); // 这个api获取路径在不同系统下不一样,mac 下需要截取路径
-    QStringList sections = curDir.split(QRegExp("[/]"));
+    QStringList sections = curDir.split(QRegularExpression("[/]"));
     QString musicPath;
 
     for (int i = 0; i < sections.size() - 3; i++)
         musicPath += sections[i] + "/";
 
-    audioPlayer->setMedia(QUrl::fromLocalFile(musicPath + "res/sound/backgrand.mp3"));
+    audioPlayer->setSource(QUrl::fromLocalFile(musicPath + "res/sound/backgrand.mp3"));
     audioPlayer->play();
 }
 
@@ -117,10 +119,13 @@ void MainGameWindow::onIconButtonPressed()
 {
     // 如果当前有方块在连接，不能点击方块
     // 因为涉及到多线，可能还要维护队列，有点复杂，就先这么简单处理一下
+    QMediaPlayer player(this);
+
     if (isLinking)
     {
+        player.setSource(QUrl::fromLocalFile(":/res/sound/release.wav"));
         // 播放音效
-        QSound::play(":/res/sound/release.wav");
+        player.play();
         return;
     }
 
@@ -131,7 +136,9 @@ void MainGameWindow::onIconButtonPressed()
     if(!preIcon)
     {
         // 播放音效
-        QSound::play(":/res/sound/select.wav");
+        player.setSource(QUrl::fromLocalFile(":/res/sound/select.wav"));
+        // 播放音效
+        player.play();
 
         // 如果单击一个icon
         curIcon->setStyleSheet(kIconClickedStyle);
@@ -149,7 +156,9 @@ void MainGameWindow::onIconButtonPressed()
                 isLinking = true;
 
                 // 播放音效
-                QSound::play(":/res/sound/pair.wav");
+                player.setSource(QUrl::fromLocalFile(":/res/sound/pair.wav"));
+                // 播放音效
+                player.play();
 
                 // 重绘
                 update();
@@ -170,7 +179,8 @@ void MainGameWindow::onIconButtonPressed()
             else
             {
                 // 播放音效
-                QSound::play(":/res/sound/release.wav");
+                player.setSource(QUrl::fromLocalFile(":/res/sound/release.wav"));
+                player.play();
 
                 // 消除失败，恢复
                 preIcon->setStyleSheet(kIconReleasedStyle);
@@ -184,7 +194,8 @@ void MainGameWindow::onIconButtonPressed()
         else if(curIcon == preIcon)
         {
             // 播放音效
-            QSound::play(":/res/sound/release.wav");
+            player.setSource(QUrl::fromLocalFile(":/res/sound/release.wav"));
+            player.play();
 
             preIcon->setStyleSheet(kIconReleasedStyle);
             curIcon->setStyleSheet(kIconReleasedStyle);
@@ -421,3 +432,5 @@ void MainGameWindow::createGameWithLevel()
     }
 
 }
+
+
